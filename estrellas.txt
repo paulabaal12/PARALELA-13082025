@@ -1,0 +1,12 @@
+El buscador de Estrellas Más brillas 
+
+Un telescopio toma una imagen gigante del cielo y se quiere encontrar la estrella más brillante
+
+Meta: Encontrar las coordenadas del píxel con mayor valor
+
+Entrada:
+    - Matriz con valores de brillo (enteros) simulando una foto.
+
+Serial: Revisar cada píxel uno por uno para hallar el máximo
+
+Paralelo: Dividir la imagen en secciones, cada hilo busca el máximo local y luego se combianan los resultados para encontrar el máximo global 
