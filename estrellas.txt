@@ -1,12 +1,41 @@
-El buscador de Estrellas Más brillas 
+Actividad de Clase
+El Buscador de Estrellas Más Brillante
+Edwin de León 22809
+Paula Barillas 22764
 
 Un telescopio toma una imagen gigante del cielo y se quiere encontrar la estrella más brillante
-
 Meta: Encontrar las coordenadas del píxel con mayor valor
-
 Entrada:
     - Matriz con valores de brillo (enteros) simulando una foto.
-
 Serial: Revisar cada píxel uno por uno para hallar el máximo
+Paralelo: Dividir la imagen en secciones, cada hilo busca el máximo local y luego se combinan los resultados para encontrar el máximo global 
 
-Paralelo: Dividir la imagen en secciones, cada hilo busca el máximo local y luego se combianan los resultados para encontrar el máximo global 
+Parte Serial:
+Algoritmo MaxBrillo
+Entrada: Matriz foto[HEIGHT][WIDTH] de enteros
+Salida: Valor máximo y coordenadas (fila, columna)
+ 
+Inicio
+    max_val ← foto[0][0]
+    max_coord ← (0, 0)
+ 
+    Para i ← 0 hasta HEIGHT-1 hacer
+        Para j ← 0 hasta WIDTH-1 hacer # 
+            Si foto[i][j] > max_val entonces# Si el valor actual es mayor que max_val, significa que hemos encontrado un nuevo máximo.
+                max_val ← foto[i][j]
+                max_coord ← (i, j)
+            FinSi
+        FinPara
+    FinPara
+ 
+    Imprimir "Máximo valor:", max_val
+    Imprimir "Coordenadas:", max_coord
+
+El algoritmo recorre toda la matriz elemento por elemento, comparando cada valor con el máximo encontrado hasta el momento y actualizando las coordenadas cuando se encuentra un nuevo máximo. Este método garantiza que al finalizar el recorrido, se tenga el valor máximo y su ubicación exacta.
+
+Parte paralela:
+[ Hilo 1 ] [ Hilo 1 ] | [ Hilo 2 ] [ Hilo 2 ]
+[ Hilo 1 ] [ Hilo 1 ] | [ Hilo 2 ] [ Hilo 2 ]
+----------------------+----------------------
+[ Hilo 3 ] [ Hilo 3 ] | [ Hilo 4 ] [ Hilo 4 ]
+[ Hilo 3 ] [ Hilo 3 ] | [ Hilo 4 ] [ Hilo 4 ]
