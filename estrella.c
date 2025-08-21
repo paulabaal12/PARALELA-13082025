@@ -4,8 +4,8 @@
 #include <time.h>       
 #include <omp.h>        
 
-#define HEIGHT 8        // Define la altura de la matriz (número de filas)
-#define WIDTH 8         // Define el ancho de la matriz (número de columnas)
+#define HEIGHT 10        // se define la altura de la matriz (número de filas)
+#define WIDTH 10        // se define el ancho de la matriz (número de columnas)
 
 // Función para llenar la matriz con valores aleatorios de brillo
 void llenar_matriz(int foto[HEIGHT][WIDTH]) {
@@ -15,7 +15,7 @@ void llenar_matriz(int foto[HEIGHT][WIDTH]) {
             foto[i][j] = rand() % 1000; // Asigna un valor aleatorio entre 0 y 999 a cada píxel
 }
 
-// Función para imprimir la matriz de brillo en pantalla
+// imprime la matriz de brillo en pantalla
 void imprimir_matriz(int foto[HEIGHT][WIDTH]) {
     for (int i = 0; i < HEIGHT; i++) { // Recorre cada fila
         for (int j = 0; j < WIDTH; j++) // Recorre cada columna
@@ -24,7 +24,7 @@ void imprimir_matriz(int foto[HEIGHT][WIDTH]) {
     }
 }
 
-// Parte Serial: Busca el valor máximo y sus coordenadas recorriendo toda la matriz
+// Parte Serial: busca el valor máximo y sus coordenadas recorriendo toda la matriz
 double max_brillo_serial(int foto[HEIGHT][WIDTH]) {
     clock_t start = clock(); // Inicia el cronómetro
     int max_val = foto[0][0]; // Inicializa el máximo con el primer valor de la matriz
@@ -38,7 +38,7 @@ double max_brillo_serial(int foto[HEIGHT][WIDTH]) {
             }
         }
     }
-    clock_t end = clock(); // Detiene el cronómetro
+    clock_t end = clock(); 
     double tiempo = (double)(end - start) / CLOCKS_PER_SEC; // Calcula el tiempo en segundos
     printf("Serial:\n");
     printf("Maximo valor: %d\n", max_val); // Imprime el valor máximo encontrado
@@ -47,7 +47,7 @@ double max_brillo_serial(int foto[HEIGHT][WIDTH]) {
     return tiempo;
 }
 
-// Parte Paralela: Busca el valor máximo usando varios hilos con OpenMP
+// Parte Paralela: Busca el valor máximo usando varios hilos (OpenMP)
 double max_brillo_paralelo(int foto[HEIGHT][WIDTH], int *num_threads) {
     double start = omp_get_wtime(); // Inicia el cronómetro de OpenMP
     int max_val = foto[0][0]; // Inicializa el máximo global
