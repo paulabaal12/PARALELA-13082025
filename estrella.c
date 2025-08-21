@@ -25,7 +25,8 @@ void imprimir_matriz(int foto[HEIGHT][WIDTH]) {
 }
 
 // Parte Serial: Busca el valor máximo y sus coordenadas recorriendo toda la matriz
-void max_brillo_serial(int foto[HEIGHT][WIDTH]) {
+double max_brillo_serial(int foto[HEIGHT][WIDTH]) {
+    clock_t start = clock(); // Inicia el cronómetro
     int max_val = foto[0][0]; // Inicializa el máximo con el primer valor de la matriz
     int max_i = 0, max_j = 0; // Inicializa las coordenadas del máximo
     for (int i = 0; i < HEIGHT; i++) { // Recorre cada fila
@@ -37,45 +38,59 @@ void max_brillo_serial(int foto[HEIGHT][WIDTH]) {
             }
         }
     }
+    clock_t end = clock(); // Detiene el cronómetro
+    double tiempo = (double)(end - start) / CLOCKS_PER_SEC; // Calcula el tiempo en segundos
     printf("Serial:\n");
     printf("Maximo valor: %d\n", max_val); // Imprime el valor máximo encontrado
     printf("Coordenadas: (%d, %d)\n", max_i, max_j); // Imprime las coordenadas del máximo
+    printf("Tiempo serial: %f segundos\n", tiempo);
+    return tiempo;
 }
 
 // Parte Paralela: Busca el valor máximo usando varios hilos con OpenMP
-void max_brillo_paralelo(int foto[HEIGHT][WIDTH]) {
+double max_brillo_paralelo(int foto[HEIGHT][WIDTH], int *num_threads) {
+    double start = omp_get_wtime(); // Inicia el cronómetro de OpenMP
     int max_val = foto[0][0]; // Inicializa el máximo global
     int max_i = 0, max_j = 0; // Inicializa las coordenadas globales
 
-    #pragma omp parallel // Inicia una región paralela
+    #pragma omp parallel
     {
         int local_max = foto[0][0]; // Cada hilo tiene su propio máximo local
         int local_i = 0, local_j = 0; // Y sus propias coordenadas locales
 
-        #pragma omp for collapse(2) // Distribuye los bucles anidados entre los hilos
-        for (int i = 0; i < HEIGHT; i++) {
-            for (int j = 0; j < WIDTH; j++) {
+        #pragma omp for collapse(2) // Divide el trabajo entre los hilos
+        for (int i = 0; i < HEIGHT; i++) { // Recorre cada fila
+            for (int j = 0; j < WIDTH; j++) { // Recorre cada columna
                 if (foto[i][j] > local_max) { // Si el valor actual es mayor que el máximo local
                     local_max = foto[i][j];   // Actualiza el máximo local
-                    local_i = i;              // Guarda la fila local
-                    local_j = j;              // Guarda la columna local
+                    local_i = i;              // Guarda la fila del nuevo máximo local
+                    local_j = j;              // Guarda la columna del nuevo máximo local
                 }
             }
         }
 
-        #pragma omp critical // Sección crítica: solo un hilo a la vez puede ejecutar esto
+        #pragma omp critical // Sección crítica para actualizar el máximo 
         {
-            if (local_max > max_val) { // Si el máximo local es mayor que el global
+            if (local_max > max_val) { // Si el máximo local es mayor que el máximo global
                 max_val = local_max;   // Actualiza el máximo global
-                max_i = local_i;       // Actualiza la fila global
-                max_j = local_j;       // Actualiza la columna global
+                max_i = local_i;       // Actualiza la fila del máximo global
+                max_j = local_j;       // Actualiza la columna del máximo global
             }
+        }
+
+        #pragma omp master
+        {
+            *num_threads = omp_get_num_threads(); // Obtiene el número de hilos usados
         }
     }
 
+    double end = omp_get_wtime(); // Detiene el cronómetro
+    double tiempo = end - start; // Calcula el tiempo en segundos
     printf("Paralelo:\n");
-    printf("Maximo valor: %d\n", max_val); // Imprime el valor máximo encontrado en paralelo
-    printf("Coordenadas: (%d, %d)\n", max_i, max_j); // Imprime las coordenadas del máximo
+    printf("Maximo valor: %d\n", max_val);
+    printf("Coordenadas: (%d, %d)\n", max_i, max_j);
+    printf("Tiempo paralelo: %f segundos\n", tiempo);
+    return tiempo;
 }
 
 // Función principal del programa
@@ -85,8 +100,18 @@ int main() {
     printf("Matriz de brillo:\n");
     imprimir_matriz(foto);   // Imprime la matriz
 
-    max_brillo_serial(foto);   // Llama a la función serial
-    max_brillo_paralelo(foto); // Llama a la función paralela
+    double t_serial = max_brillo_serial(foto);   // Llama a la función serial y mide el tiempo
+    int num_threads = 1;
+    double t_paralelo = max_brillo_paralelo(foto, &num_threads); // Llama a la función paralela y mide el tiempo
+
+    // Calcular speedup y eficiencia
+    double speedup = t_serial / t_paralelo; // Calcula el speedup
+    double eficiencia = speedup / num_threads;
+    printf("\n--- METRICAS ---\n");
+    printf("Speedup: %f\n", speedup);
+    printf("Eficiencia: %f\n", eficiencia);
+    printf("Numero de hilos: %d\n", num_threads);
+    printf("Tamaño de la matriz: %dx%d\n", HEIGHT, WIDTH);
 
     return 0;
 }
